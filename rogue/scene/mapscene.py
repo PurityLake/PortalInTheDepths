@@ -15,7 +15,9 @@ class MapScene(Scene):
         self.font: pygame.Font = pygame.Font(size=20)
         self.surfaceToDraw: pygame.Surface
         self.pos: Tuple[int, int] = (400, 300)
-        self.map: Map = Map(self.game_dir, os.path.join('resources', 'testmap.map'))
+        self.the_map: Map = Map(self.game_dir, os.path.join('resources', 'testmap.map'))
+        self.player_pos: Tuple[int, int] = self.the_map.player_pos
+        self.player_keys: pygame.key.ScancodeWrapper = pygame.key.get_pressed()
         self._setup()
 
     def _setup(self):
@@ -27,33 +29,46 @@ class MapScene(Scene):
 
     def _generate_char_surfaces(self) -> None:
         self.atlas.clear()
-        for c in self.map.chars:
+        for c in self.the_map.chars:
             self.atlas[c] = self.font.render(c, True, (255, 255, 255))
 
     def _write_to_surface(self) -> None:
-        if self.map.should_update_surface:
-            self.surfaceToDraw = pygame.Surface((self.map.width, self.map.height))
-            self.map.should_update_surface = False
+        if self.the_map.should_update_surface:
+            self.surfaceToDraw = pygame.Surface((self.the_map.width, self.the_map.height))
+            self.the_map.should_update_surface = False
         self.surfaceToDraw.fill((0, 0, 0))
-        for row in self.map.map_lines:
+        for row in self.the_map.map_lines:
             for col in row:
                 if col.visible:
-                    self.surfaceToDraw.blit(self.atlas[col.c], (col.x * 20, col.y * 20))
+                    c = col.c
+                    if col.has_player:
+                        c = self.the_map.player_str
+                    self.surfaceToDraw.blit(self.atlas[c], (col.x * 20, col.y * 20))
 
     def update(self, dt: float) -> Self:
         keys = pygame.key.get_pressed()
-        x, y = self.pos
+        x, y = self.player_pos
 
-        if keys[pygame.K_w]:
-            y -= self.speed * dt
-        if keys[pygame.K_s]:
-            y += self.speed * dt
-        if keys[pygame.K_a]:
-            x -= self.speed * dt
-        if keys[pygame.K_d]:
-            x += self.speed * dt
+        if keys[pygame.K_w] and not self.player_keys[pygame.K_w]:
+            print(x, y)
+            y -= 1
+            print(x, y)
+        if keys[pygame.K_s] and not self.player_keys[pygame.K_s]:
+            y += 1
+        if keys[pygame.K_a] and not self.player_keys[pygame.K_a]:
+            x -= 1
+        if keys[pygame.K_d] and not self.player_keys[pygame.K_d]:
+            x += 1
 
-        self.pos = (x, y)
+        self.player_keys = keys
+
+        if self.player_pos != (x, y):
+            if not self.the_map.map_lines[y][x].tile_type == TileType.WALL:
+                px, py = self.player_pos
+                self.the_map.set(px, py, 'has_player', False)
+                self.the_map.set( x,  y, 'has_player', True)
+                self._write_to_surface()
+                self.player_pos = x, y
 
         return self
 
@@ -66,7 +81,7 @@ class MapScene(Scene):
 
     def set_data(self, name: str, value: Any) -> None:
         if name == "map":
-            self.map.parse(value)
+            self.the_map.parse(value)
             self._create_map()
 
 
@@ -98,6 +113,8 @@ class Map:
         self.should_update_surface: bool = True
         self._mode: str = ""
         self.tile_data: dict = {}
+        self.player_pos: Tuple[int, int] = (0, 0)
+        self.player_str: str = '@'
         self.parse(os.path.join(self.game_dir, filename))
 
     def parse(self, filename: str) -> None:
@@ -128,6 +145,9 @@ class Map:
                 elif self._mode == 'map':
                     self._read_map(line)
 
+    def set(self, x: int, y: int, key: str, value: Any) -> None:
+        setattr(self.map_lines[y][x], key, value)
+
     def _read_info(self, line: str) -> None:
         split = line.split('=')
         if len(split) == 2:
@@ -149,7 +169,7 @@ class Map:
 
     def _read_map(self, line: str) -> None:
         row = []
-        y = max(0, len(self.map_lines) - 1)
+        y = max(0, len(self.map_lines))
         for x, c in enumerate(line):
             self.chars.add(c)
             data = self.tile_data.get(c)
@@ -158,7 +178,10 @@ class Map:
             else:
                 self.chars.add(c)
                 if data == 'player':
-                    row.append(Tile(x, y, c, TileType.FLOOR, True))
+                    self.player_pos = x, y
+                    print(self.player_pos)
+                    self.player_str = c
+                    row.append(Tile(x, y, '.', TileType.FLOOR, True))
                 elif data == 'floor':
                     row.append(Tile(x, y, c, TileType.FLOOR))
                 elif data == 'wall':
