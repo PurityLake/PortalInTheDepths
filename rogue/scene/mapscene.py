@@ -1,6 +1,7 @@
 import os.path
 
 from . import Scene
+from ..fov import FOV, FOVTile
 from dataclasses import dataclass
 from enum import Enum, auto
 from typing import Any, IO, List, Self, Tuple
@@ -18,6 +19,7 @@ class MapScene(Scene):
         self.the_map: Map = Map(self.game_dir, os.path.join('resources', 'testmap.map'))
         self.player_pos: Tuple[int, int] = self.the_map.player_pos
         self.player_keys: pygame.key.ScancodeWrapper = pygame.key.get_pressed()
+        self.fov: FOV = FOV(3)
         self._setup()
 
     def _setup(self):
@@ -39,11 +41,16 @@ class MapScene(Scene):
         self.surfaceToDraw.fill((0, 0, 0))
         for row in self.the_map.map_lines:
             for col in row:
+                col.set_visible(False)
+        self.fov.check_visibility(self.player_pos[0], self.player_pos[1], self.the_map.map_lines)
+        for row in self.the_map.map_lines:
+            for col in row:
                 if col.visible:
                     c = col.c
                     if col.has_player:
                         c = self.the_map.player_str
-                    self.surfaceToDraw.blit(self.atlas[c], (col.x * 20, col.y * 20))
+                    if col.tile_type != TileType.EMPTY:
+                        self.surfaceToDraw.blit(self.atlas[c], (col.x * 20, col.y * 20))
 
     def update(self, dt: float) -> Self:
         keys = pygame.key.get_pressed()
@@ -66,9 +73,9 @@ class MapScene(Scene):
             if not self.the_map.map_lines[y][x].tile_type == TileType.WALL:
                 px, py = self.player_pos
                 self.the_map.set(px, py, 'has_player', False)
-                self.the_map.set( x,  y, 'has_player', True)
-                self._write_to_surface()
+                self.the_map.set( x,  y,'has_player', True)
                 self.player_pos = x, y
+                self._write_to_surface()
 
         return self
 
@@ -92,13 +99,19 @@ class TileType(Enum):
 
 
 @dataclass
-class Tile:
+class Tile(FOVTile):
     x: int
     y: int
     c: str
     tile_type: TileType
     has_player: bool = False
     visible: bool = True
+
+    def set_visible(self, value: bool) -> None:
+        self.visible = value
+
+    def is_wall(self) -> bool:
+        return self.tile_type == TileType.WALL
 
 
 class Map:
