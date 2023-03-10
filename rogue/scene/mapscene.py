@@ -1,43 +1,44 @@
 import os.path
 
 from . import Scene
-from typing import List, Self, Tuple
+from dataclasses import dataclass
+from enum import Enum, auto
+from typing import Any, IO, List, Self, Tuple
 import pygame
 
 
 class MapScene(Scene):
-    def __init__(self, gamedir):
-        self.gamedir = gamedir
+    def __init__(self, game_dir):
+        self.game_dir = game_dir
         self.atlas: dict = {}
         self.speed: float = 100
         self.font: pygame.Font = pygame.Font(size=20)
         self.surfaceToDraw: pygame.Surface
         self.pos: Tuple[int, int] = (400, 300)
-        self.width: int
-        self.height: int
+        self.map: Map = Map(self.game_dir, os.path.join('resources', 'testmap.map'))
         self._setup()
 
     def _setup(self):
-        charsToCreate = set()
-        lines = []
-        dims = ()
-        testmappath = os.path.join(self.gamedir, 'resources', 'testmap.map')
-        with open(testmappath, 'r') as f:
-            dimsarr = f.readline().split(',')
-            dims = (int(dimsarr[0]) * 20, int(dimsarr[1]) * 20)
-            for line in f.readlines():
-                for c in line:
-                    charsToCreate.add(c)
-                lines.append(line)
+        self._create_map()
 
-        for c in charsToCreate:
+    def _create_map(self):
+        self._generate_char_surfaces()
+        self._write_to_surface()
+
+    def _generate_char_surfaces(self) -> None:
+        self.atlas.clear()
+        for c in self.map.chars:
             self.atlas[c] = self.font.render(c, True, (255, 255, 255))
 
-        self.surfaceToDraw = pygame.Surface(dims)
-        for row_idx, row in enumerate(lines):
-            for c_idx, c in enumerate(row):
-                print(c_idx, row_idx)
-                self.surfaceToDraw.blit(self.atlas[c], (c_idx * 20, row_idx * 20))
+    def _write_to_surface(self) -> None:
+        if self.map.should_update_surface:
+            self.surfaceToDraw = pygame.Surface((self.map.width, self.map.height))
+            self.map.should_update_surface = False
+        self.surfaceToDraw.fill((0, 0, 0))
+        for row in self.map.map_lines:
+            for col in row:
+                if col.visible:
+                    self.surfaceToDraw.blit(self.atlas[col.c], (col.x * 20, col.y * 20))
 
     def update(self, dt: float) -> Self:
         keys = pygame.key.get_pressed()
@@ -62,3 +63,104 @@ class MapScene(Scene):
 
     def get_event(self, event: pygame.Event) -> None:
         pass
+
+    def set_data(self, name: str, value: Any) -> None:
+        if name == "map":
+            self.map.parse(value)
+            self._create_map()
+
+
+class TileType(Enum):
+    FLOOR = auto()
+    WALL = auto()
+    EMPTY = auto()
+
+
+@dataclass
+class Tile:
+    x: int
+    y: int
+    c: str
+    tile_type: TileType
+    has_player: bool = False
+    visible: bool = True
+
+
+class Map:
+    def __init__(self, game_dir: str, filename: str):
+        self.filename: str = ""
+        self.game_dir: str = game_dir
+        self.chars: set = set()
+        self.map_lines: List[List[Tile]] = []
+        self.new_info: bool = True
+        self.width: int = -1
+        self.height: int = -1
+        self.should_update_surface: bool = True
+        self._mode: str = ""
+        self.tile_data: dict = {}
+        self.parse(os.path.join(self.game_dir, filename))
+
+    def parse(self, filename: str) -> None:
+        self.filename = os.path.join(self.game_dir, filename)
+        with open(self.filename, 'r') as f:
+            for line in f.readlines():
+                line = line.strip()
+                if len(line) == 0:
+                    continue
+
+                if line == '[mapinfo]':
+                    self._mode = 'info'
+                    continue
+                elif line == '[defs]':
+                    self._mode = 'defs'
+                    continue
+                elif line == '[map]':
+                    self._mode = 'map'
+                    continue
+                elif line.startswith('[/'):
+                    self._mode = ''
+                    continue
+
+                if self._mode == 'info':
+                    self._read_info(line)
+                elif self._mode == 'defs':
+                    self._read_defs(line)
+                elif self._mode == 'map':
+                    self._read_map(line)
+
+    def _read_info(self, line: str) -> None:
+        split = line.split('=')
+        if len(split) == 2:
+            name = split[0]
+            value = split[1]
+            if name == 'size':
+                print(value)
+                dims = value.split(',')
+                width, height = (int(dims[0]) * 20, int(dims[1]) * 20)
+                self.should_update_surface = self.width != width and self.height != height
+                self.width, self.height = width, height
+
+    def _read_defs(self, line: str) -> None:
+        split = line.split('=')
+        if len(split) == 2:
+            name = split[0]
+            value = split[1]
+            self.tile_data[value] = name
+
+    def _read_map(self, line: str) -> None:
+        row = []
+        y = max(0, len(self.map_lines) - 1)
+        for x, c in enumerate(line):
+            self.chars.add(c)
+            data = self.tile_data.get(c)
+            if not data:
+                row.append(Tile(x, y, ' ', TileType.EMPTY, visible=False))
+            else:
+                self.chars.add(c)
+                if data == 'player':
+                    row.append(Tile(x, y, c, TileType.FLOOR, True))
+                elif data == 'floor':
+                    row.append(Tile(x, y, c, TileType.FLOOR))
+                elif data == 'wall':
+                    row.append(Tile(x, y, c, TileType.WALL))
+        self.map_lines.append(row)

@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod
-from typing import Self
+from typing import Any, Self
 import pygame
 
 __all__ = ['Scene']
@@ -16,4 +16,8 @@ class Scene(metaclass=ABCMeta):
 
     @abstractmethod
     def get_event(self, event: pygame.Event) -> None:
+        pass
+
+    @abstractmethod
+    def set_data(self, name: str, val: Any) -> Any:
         pass
