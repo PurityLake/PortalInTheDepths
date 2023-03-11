@@ -6,21 +6,6 @@ from typing import List, Set, Tuple
 __all__ = []
 
 
-class Octant(Enum):
-    # UP
-    NNW = auto()
-    NNE = auto()
-    # LEFT
-    WNW = auto()
-    WSW = auto()
-    # DOWN
-    SSW = auto()
-    SSE = auto()
-    # RIGHT
-    ESE = auto()
-    ENE = auto()
-
-
 class FOVTile(metaclass=ABCMeta):
     @abstractmethod
     def set_visible(self, value: bool) -> None:
