@@ -15,11 +15,11 @@ class MapScene(Scene):
         self.speed: float = 100
         self.font: pygame.Font = pygame.Font(size=20)
         self.surfaceToDraw: pygame.Surface
-        self.pos: Tuple[int, int] = (400, 300)
+        self.pos: Tuple[int, int] = (0, 0)
         self.the_map: Map = Map(self.game_dir, os.path.join('resources', 'testmap.map'))
         self.player_pos: Tuple[int, int] = self.the_map.player_pos
         self.player_keys: pygame.key.ScancodeWrapper = pygame.key.get_pressed()
-        self.fov: FOV = FOV(3)
+        self.fov: FOV = FOV(5)
         self._setup()
 
     def _setup(self):
@@ -192,7 +192,6 @@ class Map:
                 self.chars.add(c)
                 if data == 'player':
                     self.player_pos = x, y
-                    print(self.player_pos)
                     self.player_str = c
                     row.append(Tile(x, y, '.', TileType.FLOOR, True))
                 elif data == 'floor':
