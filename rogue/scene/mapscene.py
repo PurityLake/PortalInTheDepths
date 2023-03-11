@@ -16,7 +16,7 @@ class MapScene(Scene):
         self.font: pygame.Font = pygame.Font(size=20)
         self.surfaceToDraw: pygame.Surface
         self.pos: Tuple[int, int] = (0, 0)
-        self.the_map: Map = Map(self.game_dir, os.path.join('resources', 'testmap.map'))
+        self.the_map: Map = Map(self.game_dir, os.path.join("resources", "testmap.map"))
         self.player_pos: Tuple[int, int] = self.the_map.player_pos
         self.player_keys: pygame.key.ScancodeWrapper = pygame.key.get_pressed()
         self.fov: FOV = FOV(5)
@@ -36,13 +36,17 @@ class MapScene(Scene):
 
     def _write_to_surface(self) -> None:
         if self.the_map.should_update_surface:
-            self.surfaceToDraw = pygame.Surface((self.the_map.width, self.the_map.height))
+            self.surfaceToDraw = pygame.Surface(
+                (self.the_map.width, self.the_map.height)
+            )
             self.the_map.should_update_surface = False
         self.surfaceToDraw.fill((0, 0, 0))
         for row in self.the_map.map_lines:
             for col in row:
                 col.set_visible(False)
-        self.fov.check_visibility(self.player_pos[0], self.player_pos[1], self.the_map.map_lines)
+        self.fov.check_visibility(
+            self.player_pos[0], self.player_pos[1], self.the_map.map_lines
+        )
         for row in self.the_map.map_lines:
             for col in row:
                 if col.visible:
@@ -72,8 +76,8 @@ class MapScene(Scene):
         if self.player_pos != (x, y):
             if not self.the_map.map_lines[y][x].tile_type == TileType.WALL:
                 px, py = self.player_pos
-                self.the_map.set(px, py, 'has_player', False)
-                self.the_map.set( x,  y,'has_player', True)
+                self.the_map.set(px, py, "has_player", False)
+                self.the_map.set(x, y, "has_player", True)
                 self.player_pos = x, y
                 self._write_to_surface()
 
@@ -127,54 +131,56 @@ class Map:
         self._mode: str = ""
         self.tile_data: dict = {}
         self.player_pos: Tuple[int, int] = (0, 0)
-        self.player_str: str = '@'
+        self.player_str: str = "@"
         self.parse(os.path.join(self.game_dir, filename))
 
     def parse(self, filename: str) -> None:
         self.filename = os.path.join(self.game_dir, filename)
-        with open(self.filename, 'r') as f:
+        with open(self.filename, "r") as f:
             for line in f.readlines():
                 line = line.strip()
                 if len(line) == 0:
                     continue
 
-                if line == '[mapinfo]':
-                    self._mode = 'info'
+                if line == "[mapinfo]":
+                    self._mode = "info"
                     continue
-                elif line == '[defs]':
-                    self._mode = 'defs'
+                elif line == "[defs]":
+                    self._mode = "defs"
                     continue
-                elif line == '[map]':
-                    self._mode = 'map'
+                elif line == "[map]":
+                    self._mode = "map"
                     continue
-                elif line.startswith('[/'):
-                    self._mode = ''
+                elif line.startswith("[/"):
+                    self._mode = ""
                     continue
 
-                if self._mode == 'info':
+                if self._mode == "info":
                     self._read_info(line)
-                elif self._mode == 'defs':
+                elif self._mode == "defs":
                     self._read_defs(line)
-                elif self._mode == 'map':
+                elif self._mode == "map":
                     self._read_map(line)
 
     def set(self, x: int, y: int, key: str, value: Any) -> None:
         setattr(self.map_lines[y][x], key, value)
 
     def _read_info(self, line: str) -> None:
-        split = line.split('=')
+        split = line.split("=")
         if len(split) == 2:
             name = split[0]
             value = split[1]
-            if name == 'size':
+            if name == "size":
                 print(value)
-                dims = value.split(',')
+                dims = value.split(",")
                 width, height = (int(dims[0]) * 20, int(dims[1]) * 20)
-                self.should_update_surface = self.width != width and self.height != height
+                self.should_update_surface = (
+                    self.width != width and self.height != height
+                )
                 self.width, self.height = width, height
 
     def _read_defs(self, line: str) -> None:
-        split = line.split('=')
+        split = line.split("=")
         if len(split) == 2:
             name = split[0]
             value = split[1]
@@ -187,15 +193,15 @@ class Map:
             self.chars.add(c)
             data = self.tile_data.get(c)
             if not data:
-                row.append(Tile(x, y, ' ', TileType.EMPTY, visible=False))
+                row.append(Tile(x, y, " ", TileType.EMPTY, visible=False))
             else:
                 self.chars.add(c)
-                if data == 'player':
+                if data == "player":
                     self.player_pos = x, y
                     self.player_str = c
-                    row.append(Tile(x, y, '.', TileType.FLOOR, True))
-                elif data == 'floor':
+                    row.append(Tile(x, y, ".", TileType.FLOOR, True))
+                elif data == "floor":
                     row.append(Tile(x, y, c, TileType.FLOOR))
-                elif data == 'wall':
+                elif data == "wall":
                     row.append(Tile(x, y, c, TileType.WALL))
         self.map_lines.append(row)

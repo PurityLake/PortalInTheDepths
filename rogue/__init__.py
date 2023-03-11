@@ -3,7 +3,7 @@ from .scene.mapscene import MapScene
 import pygame
 from typing import Tuple
 
-__all__ = ['Rogue']
+__all__ = ["Rogue"]
 
 
 class Rogue:

@@ -2,7 +2,7 @@ from abc import ABCMeta, abstractmethod
 from typing import Any, Self
 import pygame
 
-__all__ = ['Scene']
+__all__ = ["Scene"]
 
 
 class Scene(metaclass=ABCMeta):

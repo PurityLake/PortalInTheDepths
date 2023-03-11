@@ -76,7 +76,9 @@ class FOV:
 
     def _add_wall(self, walls: List[Angles], new: Angles) -> List[Angles]:
         angle: Angles = Angles(new.start, new.middle, new.end)
-        new_walls: List[Angles] = [wall for wall in walls if not self._combine(wall, angle)]
+        new_walls: List[Angles] = [
+            wall for wall in walls if not self._combine(wall, angle)
+        ]
         new_walls.append(angle)
         return new_walls
 
@@ -102,7 +104,9 @@ class FOV:
 
         return False
 
-    def _check_y(self, px: int, py: int, dx: int, dy: int, tiles: List[List[FOVTile]]) -> Set[Tuple[int, int]]:
+    def _check_y(
+        self, px: int, py: int, dx: int, dy: int, tiles: List[List[FOVTile]]
+    ) -> Set[Tuple[int, int]]:
         count = 1
         positions: Set[Tuple[int, int]] = set()
         start_y = py + dy
@@ -120,19 +124,25 @@ class FOV:
                         start_angle = abs(x) * angle_range
                         middle_angle = start_angle + (angle_range / 2.0)
                         end_angle = start_angle + angle_range
-                        print(f'{start_angle:.3f}, {middle_angle:.3f}, {end_angle:.3f}')
+                        print(f"{start_angle:.3f}, {middle_angle:.3f}, {end_angle:.3f}")
                         is_wall = tiles[new_y][new_x].is_wall()
                         obj: Angles = Angles(start_angle, middle_angle, end_angle)
                         if self._is_visible(obj, walls, is_wall):
                             positions.add((new_x, new_y))
                             if is_wall:
-                                walls = self._add_wall(walls, Angles(start_angle, middle_angle, end_angle))
+                                walls = self._add_wall(
+                                    walls, Angles(start_angle, middle_angle, end_angle)
+                                )
                         else:
-                            walls = self._add_wall(walls, Angles(start_angle, middle_angle, end_angle))
+                            walls = self._add_wall(
+                                walls, Angles(start_angle, middle_angle, end_angle)
+                            )
             count += 1
         return positions
 
-    def _check_x(self, px: int, py: int, dx: int, dy: int, tiles: List[List[FOVTile]]) -> Set[Tuple[int, int]]:
+    def _check_x(
+        self, px: int, py: int, dx: int, dy: int, tiles: List[List[FOVTile]]
+    ) -> Set[Tuple[int, int]]:
         count = 1
         positions: Set[Tuple[int, int]] = set()
         start_x = px + dx
@@ -155,8 +165,12 @@ class FOV:
                         if self._is_visible(obj, walls, is_wall):
                             positions.add((new_x, new_y))
                             if is_wall:
-                                walls = self._add_wall(walls, Angles(start_angle, middle_angle, end_angle))
+                                walls = self._add_wall(
+                                    walls, Angles(start_angle, middle_angle, end_angle)
+                                )
                         else:
-                            walls = self._add_wall(walls, Angles(start_angle, middle_angle, end_angle))
+                            walls = self._add_wall(
+                                walls, Angles(start_angle, middle_angle, end_angle)
+                            )
             count += 1
         return positions
