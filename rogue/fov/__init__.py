@@ -1,9 +1,8 @@
 import dataclasses
 from abc import ABCMeta, abstractmethod
-from enum import Enum, auto
-from typing import List, Set, Tuple
+from typing import Any, Callable, List, Set, Tuple
 
-__all__ = []
+__all__ = ['FOV']
 
 
 class FOVTile(metaclass=ABCMeta):
@@ -24,10 +23,12 @@ class Angles:
 
 
 class FOV:
-    def __init__(self, radius):
+    def __init__(self, radius, tile_visible_func: Callable, set_tile_visible_func: Callable):
         self.radius = radius
+        self.tile_visible_func = tile_visible_func
+        self.set_tile_visible_func = set_tile_visible_func
 
-    def check_visibility(self, x: int, y: int, tiles: List[List[FOVTile]]):
+    def check_visibility(self, x: int, y: int, tiles: List[List[Any]]):
         tiles[y][x].set_visible(True)
         positions = self._check_y(x, y, -1, -1, tiles)
         positions.update(self._check_y(x, y, 1, -1, tiles))
@@ -39,7 +40,7 @@ class FOV:
         positions.update(self._check_x(x, y, 1, -1, tiles))
         for row in positions:
             x, y = row
-            tiles[y][x].set_visible(True)
+            self.set_tile_visible_func(tiles[y][x], True)
 
     def _is_visible(self, angles: Angles, walls: List[Angles], is_wall: bool) -> bool:
         start_vis: bool = True
@@ -109,8 +110,7 @@ class FOV:
                         start_angle = abs(x) * angle_range
                         middle_angle = start_angle + (angle_range / 2.0)
                         end_angle = start_angle + angle_range
-                        print(f"{start_angle:.3f}, {middle_angle:.3f}, {end_angle:.3f}")
-                        is_wall = tiles[new_y][new_x].is_wall()
+                        is_wall = self.tile_visible_func(tiles[new_y][new_x])
                         obj: Angles = Angles(start_angle, middle_angle, end_angle)
                         if self._is_visible(obj, walls, is_wall):
                             positions.add((new_x, new_y))
@@ -145,7 +145,7 @@ class FOV:
                         start_angle = abs(y) * angle_range
                         middle_angle = start_angle + (angle_range / 2.0)
                         end_angle = start_angle + angle_range
-                        is_wall = tiles[new_y][new_x].is_wall()
+                        is_wall = self.tile_visible_func(tiles[new_y][new_x])
                         obj: Angles = Angles(start_angle, middle_angle, end_angle)
                         if self._is_visible(obj, walls, is_wall):
                             positions.add((new_x, new_y))

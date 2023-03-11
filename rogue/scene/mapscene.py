@@ -1,7 +1,7 @@
 import os.path
 
 from . import Scene
-from ..fov import FOV, FOVTile
+from ..fov import FOV
 from dataclasses import dataclass
 from enum import Enum, auto
 from typing import Any, IO, List, Self, Tuple
@@ -19,7 +19,7 @@ class MapScene(Scene):
         self.the_map: Map = Map(self.game_dir, os.path.join("resources", "testmap.map"))
         self.player_pos: Tuple[int, int] = self.the_map.player_pos
         self.player_keys: pygame.key.ScancodeWrapper = pygame.key.get_pressed()
-        self.fov: FOV = FOV(5)
+        self.fov: FOV = FOV(5, Tile.is_wall, Tile.set_visible)
         self._setup()
 
     def _setup(self):
@@ -61,9 +61,7 @@ class MapScene(Scene):
         x, y = self.player_pos
 
         if keys[pygame.K_w] and not self.player_keys[pygame.K_w]:
-            print(x, y)
             y -= 1
-            print(x, y)
         if keys[pygame.K_s] and not self.player_keys[pygame.K_s]:
             y += 1
         if keys[pygame.K_a] and not self.player_keys[pygame.K_a]:
@@ -103,7 +101,7 @@ class TileType(Enum):
 
 
 @dataclass
-class Tile(FOVTile):
+class Tile:
     x: int
     y: int
     c: str
