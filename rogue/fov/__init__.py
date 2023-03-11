@@ -62,11 +62,11 @@ class FOV:
         end_vis: bool = True
 
         for wall in walls:
-            if wall.start < angles.start < wall.end:
+            if wall.start <= angles.start <= wall.end:
                 start_vis = False
-            if wall.start < angles.middle < wall.end:
+            if wall.start <= angles.middle <= wall.end:
                 mid_vis = False
-            if wall.start < angles.end < wall.end:
+            if wall.start <= angles.end <= wall.end:
                 end_vis = False
 
         if is_wall:
@@ -147,7 +147,7 @@ class FOV:
                     new_y = py + y
                     if 0 <= new_y < height:
                         angle_range = 1.0 / number_of_cells
-                        start_angle = abs(x) * angle_range
+                        start_angle = abs(y) * angle_range
                         middle_angle = start_angle + (angle_range / 2.0)
                         end_angle = start_angle + angle_range
                         is_wall = tiles[new_y][new_x].is_wall()
