@@ -1,10 +1,13 @@
+import os
+import shutil
 from mypy import api
 from argparse import ArgumentParser
+import PyInstaller.__main__
 
 
 def check_types() -> None:
-    print(f"> mypy main.py rogue/")
-    results = api.run(["main.py", "rogue/"])
+    print(f"> mypy pitd.py rogue/")
+    results = api.run(["pitd.py", "rogue/"])
     if results[0]:
         print("Type checking results:")
         print(results[0])
@@ -23,9 +26,9 @@ if __name__ == "__main__":
         prog="Rouge", description="A Rogue-like written in pygame-ce"
     )
 
+    parser.add_argument("--build", action="store_true")
     parser.add_argument("--check-all", action="store_true")
     parser.add_argument("--check-types", action="store_true")
-    parser.add_argument("--check-format", action="store_true")
 
     args = parser.parse_args()
 
@@ -34,5 +37,9 @@ if __name__ == "__main__":
     else:
         if args.check_types:
             check_types()
-        if args.check_format:
-            check_format()
+
+    if args.build:
+        PyInstaller.__main__.run(["pitd.spec"])
+        resources_src = "resources"
+        resources_dest = os.path.join("pitd", "resources")
+        shutil.copytree(resources_src, resources_dest)
