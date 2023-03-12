@@ -2,7 +2,7 @@ import dataclasses
 from abc import ABCMeta, abstractmethod
 from typing import Any, Callable, List, Set, Tuple
 
-__all__ = ['FOV']
+__all__ = ["FOV"]
 
 
 class FOVTile(metaclass=ABCMeta):
@@ -23,7 +23,9 @@ class Angles:
 
 
 class FOV:
-    def __init__(self, radius, tile_visible_func: Callable, set_tile_visible_func: Callable):
+    def __init__(
+        self, radius, tile_visible_func: Callable, set_tile_visible_func: Callable
+    ):
         self.radius = radius
         self.tile_visible_func = tile_visible_func
         self.set_tile_visible_func = set_tile_visible_func
