@@ -30,7 +30,7 @@ class Rogue:
     def _setup(self) -> None:
         pygame.init()
         pygame.font.init()
-        self.surface: pygame.Surface = pygame.display.set_mode(self.size)
+        self.surface = pygame.display.set_mode(self.size)
 
     def _update(self) -> None:
         if self.dt < 0.0:

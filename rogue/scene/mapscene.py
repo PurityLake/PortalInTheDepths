@@ -9,7 +9,7 @@ import pygame
 
 
 class MapScene(Scene):
-    def __init__(self, game_dir):
+    def __init__(self, game_dir: str):
         self.game_dir = game_dir
         self.atlas: dict = {}
         self.speed: float = 100
@@ -22,10 +22,10 @@ class MapScene(Scene):
         self.fov: FOV = FOV(5, Tile.is_wall, Tile.set_visible)
         self._setup()
 
-    def _setup(self):
+    def _setup(self) -> None:
         self._create_map()
 
-    def _create_map(self):
+    def _create_map(self) -> None:
         self._generate_char_surfaces()
         self._write_to_surface()
 
