@@ -5,16 +5,6 @@ from typing import Any, Callable, List, Set, Tuple
 __all__ = ["FOV"]
 
 
-class FOVTile(metaclass=ABCMeta):
-    @abstractmethod
-    def set_visible(self, value: bool) -> None:
-        pass
-
-    @abstractmethod
-    def is_wall(self) -> bool:
-        pass
-
-
 @dataclasses.dataclass
 class Angles:
     start: float
@@ -93,7 +83,7 @@ class FOV:
         return False
 
     def _check_y(
-        self, px: int, py: int, dx: int, dy: int, tiles: List[List[FOVTile]]
+        self, px: int, py: int, dx: int, dy: int, tiles: List[List[Any]]
     ) -> Set[Tuple[int, int]]:
         count = 1
         positions: Set[Tuple[int, int]] = set()
@@ -104,7 +94,7 @@ class FOV:
         for y in range(0, self.radius):
             new_y = start_y + y * dy
             if 0 <= new_y < height:
-                number_of_cells = count + abs(dx)
+                number_of_cells = count
                 for x in range(0, count * dx + dx, dx):
                     new_x = px + x
                     if 0 <= new_x < width:
@@ -128,7 +118,7 @@ class FOV:
         return positions
 
     def _check_x(
-        self, px: int, py: int, dx: int, dy: int, tiles: List[List[FOVTile]]
+        self, px: int, py: int, dx: int, dy: int, tiles: List[List[Any]]
     ) -> Set[Tuple[int, int]]:
         count = 1
         positions: Set[Tuple[int, int]] = set()
@@ -139,7 +129,7 @@ class FOV:
         for x in range(0, self.radius):
             new_x = start_x + x * dx
             if 0 <= new_x < width:
-                number_of_cells = count + abs(dy)
+                number_of_cells = count
                 for y in range(0, count * dy + dy, dy):
                     new_y = py + y
                     if 0 <= new_y < height:
