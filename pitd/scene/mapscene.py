@@ -1,5 +1,5 @@
+import math
 import os.path
-
 from . import Scene
 from ..fov import FOV
 from dataclasses import dataclass
@@ -19,7 +19,8 @@ class MapScene(Scene):
         self.the_map: Map = Map(self.game_dir, os.path.join("resources", "testmap.map"))
         self.player_pos: Tuple[int, int] = self.the_map.player_pos
         self.player_keys: pygame.key.ScancodeWrapper = pygame.key.get_pressed()
-        self.fov: FOV = FOV(5, Tile.is_wall, Tile.set_visible)
+        self.radius: int = 5
+        self.fov: FOV = FOV(self.radius, Tile.is_wall, Tile.set_visible)
         self._setup()
 
     def _setup(self) -> None:
@@ -44,17 +45,22 @@ class MapScene(Scene):
         for row in self.the_map.map_lines:
             for col in row:
                 col.set_visible(False)
-        self.fov.check_visibility(
-            self.player_pos[0], self.player_pos[1], self.the_map.map_lines
-        )
+        px, py = self.player_pos
+        self.fov.check_visibility(px, py, self.the_map.map_lines)
+        temp_radius = self.radius
+        max_dist = math.sqrt(temp_radius * temp_radius + temp_radius * temp_radius)
         for row in self.the_map.map_lines:
             for col in row:
                 if col.visible:
                     c = col.c
                     if col.has_player:
                         c = self.the_map.player_str
-                    if col.tile_type != TileType.EMPTY:
                         self.surfaceToDraw.blit(self.atlas[c], (col.x * 20, col.y * 20))
+                    elif col.tile_type != TileType.EMPTY:
+                        d = (1 - (math.sqrt(math.pow(px - col.x, 2) + math.pow(py - col.y, 2)) / max_dist)) * 255 % 200
+                        print(d)
+                        surf = self.font.render(c, True, (d, d, d, 255)).convert_alpha()
+                        self.surfaceToDraw.blit(surf, (col.x * 20, col.y * 20))
 
     def update(self, dt: float) -> Self:
         keys = pygame.key.get_pressed()
