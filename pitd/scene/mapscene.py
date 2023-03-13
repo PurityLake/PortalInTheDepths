@@ -11,8 +11,6 @@ import pygame
 class MapScene(Scene):
     def __init__(self, game_dir: str):
         self.game_dir = game_dir
-        self.atlas: dict = {}
-        self.speed: float = 100
         self.font: pygame.Font = pygame.Font(size=20)
         self.surfaceToDraw: pygame.Surface
         self.pos: Tuple[int, int] = (0, 0)
@@ -20,6 +18,7 @@ class MapScene(Scene):
         self.player_pos: Tuple[int, int] = self.the_map.player_pos
         self.player_keys: pygame.key.ScancodeWrapper = pygame.key.get_pressed()
         self.radius: int = 5
+        self.max_dist: float = -1.0
         self.fov: FOV = FOV(self.radius, Tile.is_wall, Tile.set_visible)
         self._setup()
 
@@ -27,13 +26,7 @@ class MapScene(Scene):
         self._create_map()
 
     def _create_map(self) -> None:
-        self._generate_char_surfaces()
         self._write_to_surface()
-
-    def _generate_char_surfaces(self) -> None:
-        self.atlas.clear()
-        for c in self.the_map.chars:
-            self.atlas[c] = self.font.render(c, True, (255, 255, 255))
 
     def _write_to_surface(self) -> None:
         if self.the_map.should_update_surface:
@@ -47,20 +40,39 @@ class MapScene(Scene):
                 col.set_visible(False)
         px, py = self.player_pos
         self.fov.check_visibility(px, py, self.the_map.map_lines)
-        temp_radius = self.radius
-        max_dist = math.sqrt(temp_radius * temp_radius + temp_radius * temp_radius)
         for row in self.the_map.map_lines:
             for col in row:
                 if col.visible:
                     c = col.c
                     if col.has_player:
                         c = self.the_map.player_str
-                        self.surfaceToDraw.blit(self.atlas[c], (col.x * 20, col.y * 20))
+                        self.surfaceToDraw.blit(
+                            self.font.render(c, True, (255, 255, 255)),
+                            (col.x * 20, col.y * 20),
+                        )
                     elif col.tile_type != TileType.EMPTY:
-                        d = (1 - (math.sqrt(math.pow(px - col.x, 2) + math.pow(py - col.y, 2)) / max_dist)) * 255 % 200
-                        print(d)
-                        surf = self.font.render(c, True, (d, d, d, 255)).convert_alpha()
+                        surf = self.font.render(
+                            c,
+                            True,
+                            self._calc_color_from_distance(px, py, col.x, col.y),
+                        )
                         self.surfaceToDraw.blit(surf, (col.x * 20, col.y * 20))
+
+    def _calc_color_from_distance(
+        self, px: int, py: int, tile_x: int, tile_y: int, alpha: int = 255
+    ):
+        if self.max_dist < 0.0:
+            self.max_dist = math.sqrt(
+                self.radius * self.radius + self.radius * self.radius
+            )
+        delta_x = px - tile_x
+        delta_y = py - tile_y
+        val = int(
+            (1 - (math.sqrt(delta_x * delta_x + delta_y * delta_y) / self.max_dist))
+            * 200
+            % 200
+        )
+        return pygame.Color(val, val, val, alpha)
 
     def update(self, dt: float) -> Self:
         keys = pygame.key.get_pressed()
@@ -175,7 +187,6 @@ class Map:
             name = split[0]
             value = split[1]
             if name == "size":
-                print(value)
                 dims = value.split(",")
                 width, height = (int(dims[0]) * 20, int(dims[1]) * 20)
                 self.should_update_surface = (

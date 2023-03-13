@@ -7,13 +7,13 @@ __all__ = ["PITD"]
 
 
 class PITD:
-    def __init__(self, gamedir: str, size: Tuple[int, int]):
-        self.gamedir: str = gamedir
+    def __init__(self, game_dir: str, size: Tuple[int, int]):
+        self.game_dir: str = game_dir
         self.surface: pygame.Surface
         self.size: Tuple[int, int] = size
         self._setup()
         self.dt: float = -1.0
-        self.scene: Scene = MapScene(self.gamedir)
+        self.scene: Scene = MapScene(self.game_dir)
         self.clock: pygame.Clock = pygame.Clock()
         self.running: bool = True
 
