@@ -6,8 +6,8 @@ import PyInstaller.__main__
 
 
 def check_types() -> None:
-    print(f"> mypy pitd.py pitd/")
-    results = api.run(["pitd.py", "pitd/"])
+    print("> mypy pitd.py pitd/")
+    results = api.run(["game.py", "pitd/"])
     if results[0]:
         print("Type checking results:")
         print(results[0])
