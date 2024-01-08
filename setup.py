@@ -3,10 +3,11 @@ import shutil
 from mypy import api
 from argparse import ArgumentParser
 import PyInstaller.__main__
+import pytest
 
 
 def check_types() -> None:
-    print("> mypy pitd.py pitd/")
+    print("> mypy game.py pitd/")
     results = api.run(["game.py", "pitd/"])
     if results[0]:
         print("Type checking results:")
@@ -21,12 +22,18 @@ def check_all() -> None:
     print()
 
 
+def run_tests() -> None:
+    print("runing tests")
+    pytest.main(["testing/"])
+
+
 if __name__ == "__main__":
     parser = ArgumentParser(
         prog="Rouge", description="A Rogue-like written in pygame-ce"
     )
 
     parser.add_argument("--build", action="store_true")
+    parser.add_argument("--test", action="store_true")
     parser.add_argument("--check-all", action="store_true")
     parser.add_argument("--check-types", action="store_true")
 
@@ -37,6 +44,9 @@ if __name__ == "__main__":
     else:
         if args.check_types:
             check_types()
+
+    if args.test:
+        run_tests()
 
     if args.build:
         PyInstaller.__main__.run(["pitd.spec"])
