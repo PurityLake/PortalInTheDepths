@@ -1,5 +1,4 @@
 import dataclasses
-from abc import ABCMeta, abstractmethod
 from typing import Any, Callable, List, Set, Tuple
 
 __all__ = ["FOV"]
@@ -22,7 +21,8 @@ class FOV:
 
     def check_visibility(self, x: int, y: int, tiles: List[List[Any]]):
         tiles[y][x].set_visible(True)
-        positions = self._check_y(x, y, -1, -1, tiles)
+        positions: Set[Tuple[int, int]] = set()
+        positions.update(self._check_y(x, y, -1, -1, tiles))
         positions.update(self._check_y(x, y, 1, -1, tiles))
         positions.update(self._check_y(x, y, -1, 1, tiles))
         positions.update(self._check_y(x, y, 1, 1, tiles))

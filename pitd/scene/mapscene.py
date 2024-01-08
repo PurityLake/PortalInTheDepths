@@ -4,7 +4,7 @@ from . import Scene
 from ..fov import FOV
 from dataclasses import dataclass
 from enum import Enum, auto
-from typing import Any, IO, List, Self, Tuple
+from typing import Any, List, Self, Tuple
 import pygame
 
 
@@ -19,6 +19,7 @@ class MapScene(Scene):
         self.player_keys: pygame.key.ScancodeWrapper = pygame.key.get_pressed()
         self.radius: int = 5
         self.max_dist: float = -1.0
+        self._should_quit: bool = False
         self.fov: FOV = FOV(self.radius, Tile.is_wall, Tile.set_visible)
         self._setup()
 
@@ -87,6 +88,9 @@ class MapScene(Scene):
         if keys[pygame.K_d] and not self.player_keys[pygame.K_d]:
             x += 1
 
+        if keys[pygame.K_ESCAPE]:
+            self._should_quit = True
+
         self.player_keys = keys
 
         if self.player_pos != (x, y):
@@ -106,10 +110,13 @@ class MapScene(Scene):
     def get_event(self, event: pygame.Event) -> None:
         pass
 
-    def set_data(self, name: str, value: Any) -> None:
+    def set_data(self, name: str, value: Any) -> Any:
         if name == "map":
             self.the_map.parse(value)
             self._create_map()
+
+    def should_quit(self) -> bool:
+        return self._should_quit
 
 
 class TileType(Enum):

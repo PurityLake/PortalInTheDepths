@@ -23,6 +23,7 @@ class PITD:
                 if e.type == pygame.QUIT:
                     self.running = False
                 self.scene.get_event(e)
+                self.running = not self.scene.should_quit()
             self._update()
             self._render()
             self._tick()
@@ -31,6 +32,7 @@ class PITD:
         pygame.init()
         pygame.font.init()
         self.surface = pygame.display.set_mode(self.size)
+        pygame.display.set_caption("PITD")
 
     def _update(self) -> None:
         if self.dt < 0.0:

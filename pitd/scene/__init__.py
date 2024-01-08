@@ -19,5 +19,9 @@ class Scene(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def set_data(self, name: str, val: Any) -> Any:
+    def set_data(self, name: str, value: Any) -> None:
+        pass
+
+    @abstractmethod
+    def should_quit(self) -> bool:
         pass
