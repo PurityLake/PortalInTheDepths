@@ -23,7 +23,7 @@ pefile==2023.2.7
 platformdirs==3.1.1
 pluggy==1.0.0
 pre-commit==3.1.1
-pygame-ce==2.1.4
+pygame-ce==2.4.0
 pyinstaller==5.8.0
 pyinstaller-hooks-contrib==2023.0
 pylint==2.17.0
@@ -33,6 +33,8 @@ pywin32-ctypes==0.2.0
 PyYAML==6.0
 tomlkit==0.11.6
 tox==4.4.6
+types-pyinstaller==6.3.0.20240106
+types-setuptools==69.0.0.20240106
 typing_extensions==4.5.0
 virtualenv==20.20.0
 wrapt==1.15.0

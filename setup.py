@@ -7,8 +7,8 @@ import pytest
 
 
 def check_types() -> None:
-    print("> mypy game.py pitd/")
-    results = api.run(["game.py", "pitd/"])
+    print("> mypy")
+    results = api.run([])
     if results[0]:
         print("Type checking results:")
         print(results[0])
@@ -19,6 +19,8 @@ def check_types() -> None:
 
 def check_all() -> None:
     check_types()
+    print()
+    run_tests()
     print()
 
 
