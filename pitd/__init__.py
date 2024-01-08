@@ -1,5 +1,5 @@
 from .scene import Scene
-from .scene.mapscene import MapScene
+from .scene.bsp_scene import BSPScene
 import pygame
 from typing import Tuple
 
@@ -13,7 +13,7 @@ class PITD:
         self.size: Tuple[int, int] = size
         self._setup()
         self.dt: float = -1.0
-        self.scene: Scene = MapScene(self.game_dir)
+        self.scene: Scene = BSPScene()
         self.clock: pygame.Clock = pygame.Clock()
         self.running: bool = True
 
@@ -23,7 +23,8 @@ class PITD:
                 if e.type == pygame.QUIT:
                     self.running = False
                 self.scene.get_event(e)
-                self.running = not self.scene.should_quit()
+                if self.running:
+                    self.running = not self.scene.should_quit()
             self._update()
             self._render()
             self._tick()
