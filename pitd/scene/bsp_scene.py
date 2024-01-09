@@ -9,8 +9,9 @@ class BSPScene(Scene):
     def __init__(self):
         super().__init__()
         self._should_quit = False
-        self.bsp = bsp.BSP(600, 600, 80, 200)
-        self.bsp.generate(None, 5)
+        self.bsp = bsp.BSP(600, 600, 20)
+        self.bsp.generate("test", 5)
+        self.bsp.generate_rooms()
 
     def render(self, surface: pygame.Surface) -> None:
         surface.fill((0, 0, 0))
