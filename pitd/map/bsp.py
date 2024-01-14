@@ -80,7 +80,7 @@ class BSP:
         horizontal = False
 
         if max_width >= self.min_node_size and max_height >= self.min_node_size:
-            horizontal = bool(random.getrandbits(1))
+            horizontal = max_width > max_height
         elif max_width >= self.min_node_size:
             horizontal = True
         elif max_height >= self.min_node_size:
@@ -123,11 +123,16 @@ class BSP:
         if node is not None:
             if node.left is None and node.right is None:
                 if node.width > self.min_width and node.height > self.min_height:
-                    width = random.randint(self.min_width, self.max_width)
-                    height = random.randint(self.min_height, self.max_width)
-                    width = math.clamp(width, self.min_width, self.max_width)
+                    width = math.clamp(
+                        random.randint(self.min_width, self.max_width),
+                        self.min_width,
+                        node.width,
+                    )
                     height = math.clamp(
-                        height, self.min_height, self.max_height)
+                        random.randint(self.min_height, self.max_width),
+                        self.min_height,
+                        node.height,
+                    )
                     x = random.randint(0, abs(node.width - width))
                     y = random.randint(0, abs(node.height - height))
                     node.room = Rect(x, y, width, height)
