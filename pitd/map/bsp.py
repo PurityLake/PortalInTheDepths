@@ -38,19 +38,22 @@ class BSP:
         self.root: Node | None = None
 
     def generate(self, seed: str, max_depth: int) -> None:
-        self.root = Node(False, False, self.width, self.height, None, None, root=True)
+        self.root = Node(False, False, self.width,
+                         self.height, None, None, root=True)
         random.seed(Seed(seed).get())
         horizontal = bool(random.getrandbits(1))
         width, height = 0, 0
         if horizontal:
             width = random.randint(self.min_node_size, self.width)
-            self.root.left = Node(True, horizontal, width, self.height, None, None)
+            self.root.left = Node(True, horizontal, width,
+                                  self.height, None, None)
             self.root.right = Node(
                 False, horizontal, self.width - width, self.height - height, None, None
             )
         else:
             height = random.randint(self.min_node_size, self.height)
-            self.root.left = Node(True, horizontal, self.width, height, None, None)
+            self.root.left = Node(
+                True, horizontal, self.width, height, None, None)
             self.root.right = Node(
                 False, horizontal, self.width, self.height - height, None, None
             )
@@ -91,12 +94,14 @@ class BSP:
             next_height = random.randint(self.min_node_size, max_height)
 
         if horizontal:
-            node.left = Node(True, horizontal, next_width, node.height, None, None)
+            node.left = Node(True, horizontal, next_width,
+                             node.height, None, None)
             node.right = Node(
                 False, horizontal, node.width - next_width, node.height, None, None
             )
         else:
-            node.left = Node(True, horizontal, node.width, next_height, None, None)
+            node.left = Node(True, horizontal, node.width,
+                             next_height, None, None)
             node.right = Node(
                 False, horizontal, node.width, node.height - next_height, None, None
             )

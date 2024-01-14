@@ -103,16 +103,19 @@ class FOV:
                         middle_angle = start_angle + (angle_range / 2.0)
                         end_angle = start_angle + angle_range
                         is_wall = self.tile_visible_func(tiles[new_y][new_x])
-                        obj: Angles = Angles(start_angle, middle_angle, end_angle)
+                        obj: Angles = Angles(
+                            start_angle, middle_angle, end_angle)
                         if self._is_visible(obj, walls, is_wall):
                             positions.add((new_x, new_y))
                             if is_wall:
                                 walls = self._add_wall(
-                                    walls, Angles(start_angle, middle_angle, end_angle)
+                                    walls, Angles(
+                                        start_angle, middle_angle, end_angle)
                                 )
                         else:
                             walls = self._add_wall(
-                                walls, Angles(start_angle, middle_angle, end_angle)
+                                walls, Angles(
+                                    start_angle, middle_angle, end_angle)
                             )
             count += 1
         return positions
@@ -138,16 +141,19 @@ class FOV:
                         middle_angle = start_angle + (angle_range / 2.0)
                         end_angle = start_angle + angle_range
                         is_wall = self.tile_visible_func(tiles[new_y][new_x])
-                        obj: Angles = Angles(start_angle, middle_angle, end_angle)
+                        obj: Angles = Angles(
+                            start_angle, middle_angle, end_angle)
                         if self._is_visible(obj, walls, is_wall):
                             positions.add((new_x, new_y))
                             if is_wall:
                                 walls = self._add_wall(
-                                    walls, Angles(start_angle, middle_angle, end_angle)
+                                    walls, Angles(
+                                        start_angle, middle_angle, end_angle)
                                 )
                         else:
                             walls = self._add_wall(
-                                walls, Angles(start_angle, middle_angle, end_angle)
+                                walls, Angles(
+                                    start_angle, middle_angle, end_angle)
                             )
             count += 1
         return positions

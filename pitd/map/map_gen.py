@@ -16,7 +16,8 @@ class MapGen:
         self.map_width = map_width
         self.map_height = map_height
         self.map_seed = Seed(map_seed)
-        self.map = [[0 for x in range(self.map_width)] for y in range(self.map_height)]
+        self.map = [[0 for x in range(self.map_width)]
+                    for y in range(self.map_height)]
 
     def generate(self, min_size: int, max_size: int) -> None:
         random.seed(self.map_seed.get())

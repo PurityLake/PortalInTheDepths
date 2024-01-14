@@ -15,7 +15,8 @@ class MapScene(Scene):
         self.game_dir = game_dir
         self.font: pygame.Font = pygame.Font(size=20)
         self.pos: Tuple[int, int] = (0, 0)
-        self.the_map: Map = Map(self.game_dir, os.path.join("resources", "testmap.map"))
+        self.the_map: Map = Map(
+            self.game_dir, os.path.join("resources", "testmap.map"))
         self.player_pos: Tuple[int, int] = self.the_map.player_pos
         self.player_keys: pygame.key.ScancodeWrapper = pygame.key.get_pressed()
         self.radius: int = 5
@@ -56,7 +57,8 @@ class MapScene(Scene):
                         surf = self.font.render(
                             c,
                             True,
-                            self._calc_color_from_distance(px, py, col.x, col.y),
+                            self._calc_color_from_distance(
+                                px, py, col.x, col.y),
                             _calc_color_from_distance(px, py, col.x, col.y),
                             _calc_color_from_distance(px, py, col.x, col.y),
                         )
