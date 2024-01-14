@@ -7,14 +7,6 @@ from typing import Self, Tuple
 
 
 @dataclass
-class Room:
-    x: int
-    y: int
-    width: int
-    height: int
-
-
-@dataclass
 class Node:
     is_left: bool
     horizontal: bool
@@ -23,7 +15,7 @@ class Node:
     left: Self | None
     right: Self | None
     root: bool = False
-    room: Room | None = None
+    room: pygame.Rect | None = None
     _debug_color: Tuple[int, int, int] | None = None
 
     def _get_debug_color(self) -> Tuple[int, int, int]:
@@ -36,53 +28,86 @@ class Node:
 
 
 class BSP:
-    def __init__(self, width: int, height: int, min_room_size: int):
+    def __init__(self, width: int, height: int, min_room_size: int, max_room_size: int):
         self.width: int = width
         self.height: int = height
-        self.min_room_size: int = min_room_size
+        self.min_node_size: int = min_room_size
+        self.max_room_size: int = max_room_size
+        self.rooms: int = 0
         self.root: Node | None = None
 
     def generate(self, seed: str, max_depth: int) -> None:
-        node: Node = Node(False, False, self.width, self.height, None, None, root=True)
+        self.root = Node(False, False, self.width, self.height, None, None, root=True)
         random.seed(Seed(seed).get())
-        self.root = self._generate(node, self.width, self.height, 0, max_depth)
+        horizontal = bool(random.getrandbits(1))
+        width, height = 0, 0
+        if horizontal:
+            width = random.randint(self.min_node_size, self.width)
+            self.root.left = Node(True, horizontal, width, self.height, None, None)
+            self.root.right = Node(
+                False, horizontal, self.width - width, self.height - height, None, None
+            )
+        else:
+            height = random.randint(self.min_node_size, self.height)
+            self.root.left = Node(True, horizontal, self.width, height, None, None)
+            self.root.right = Node(
+                False, horizontal, self.width, self.height - height, None, None
+            )
+
+        self._generate(self.root.left, 1, max_depth)
+        self._generate(self.root.right, 1, max_depth)
 
     def _generate(
         self,
         node: Node,
-        width: int,
-        height: int,
         depth: int,
         max_depth: int,
-    ) -> Node | None:
+    ) -> None:
         if depth >= max_depth:
-            return None
-        left = Node(True, False, 0, 0, None, None)
-        right = Node(False, False, 0, 0, None, None)
+            return
 
-        rand_width = random.randint(0, width)
-        rand_height = random.randint(0, height)
+        max_width = node.width - self.min_node_size
+        max_height = node.height - self.min_node_size
 
-        left.horizontal = right.horizontal = bool(random.getrandbits(1))
+        if max_width < self.min_node_size and max_height < self.min_node_size:
+            return
 
-        if left.horizontal:
-            left.height = right.height = height
-            data = [rand_width, width - rand_width]
-            random.shuffle(data)
-            left.width, right.width = data
+        horizontal = False
+
+        if max_width >= self.min_node_size and max_height >= self.min_node_size:
+            horizontal = max_width > max_height
+        elif max_width >= self.min_node_size:
+            horizontal = True
+        elif max_height >= self.min_node_size:
+            horizontal = False
+
+        next_width, next_height = 0, 0
+        if horizontal:
+            next_width = random.randint(self.min_node_size, max_width)
+            next_height = node.height
         else:
-            left.width = right.width = width
-            data = [rand_height, height - rand_height]
-            random.shuffle(data)
-            left.height, right.height = data
+            next_width = node.width
+            next_height = random.randint(self.min_node_size, max_height)
 
-        node.left = self._generate(left, left.width, left.height, depth + 1, max_depth)
-        node.right = self._generate(
-            right, right.width, right.height, depth + 1, max_depth
-        )
-        return node
+        if horizontal:
+            node.left = Node(True, horizontal, next_width, node.height, None, None)
+            node.right = Node(
+                False, horizontal, node.width - next_width, node.height, None, None
+            )
+        else:
+            node.left = Node(True, horizontal, node.width, next_height, None, None)
+            node.right = Node(
+                False, horizontal, node.width, node.height - next_height, None, None
+            )
 
-    def generate_rooms(self) -> None:
+        self._generate(node.left, depth + 1, max_depth)
+        self._generate(node.right, depth + 1, max_depth)
+
+    def generate_rooms(
+        self, min_size: Tuple[int, int], max_size: Tuple[int, int]
+    ) -> None:
+        self.min_width, self.min_height = min_size
+        self.max_width, self.max_height = max_size
         if self.root is not None:
             self._generate_rooms(self.root.left)
             self._generate_rooms(self.root.right)
@@ -90,15 +115,40 @@ class BSP:
     def _generate_rooms(self, node: Node | None) -> None:
         if node is not None:
             if node.left is None and node.right is None:
-                if node.width > self.min_room_size and node.height > self.min_room_size:
-                    width = random.randint(self.min_room_size, node.width)
-                    height = random.randint(self.min_room_size, node.height)
+                if node.width > self.min_width and node.height > self.min_height:
+                    width = random.randint(self.min_width, node.width)
+                    height = random.randint(self.min_height, node.height)
                     x = random.randint(0, abs(node.width - width))
                     y = random.randint(0, abs(node.height - height))
-                    node.room = Room(x, y, width, height)
+                    node.room = pygame.Rect(x, y, width, height)
+                    self.rooms += 1
             else:
                 self._generate_rooms(node.left)
                 self._generate_rooms(node.right)
+
+    def prune(self, max_rooms: int) -> None:
+        if self.rooms > max_rooms:
+            while self.rooms > max_rooms:
+                _ = self._prune(self.root, max_rooms)
+
+    def _prune(self, node: Node | None, max_rooms: int) -> bool:
+        if self.rooms <= max_rooms:
+            return False
+
+        if node is not None:
+            if node.left is None and node.right is None:
+                if node.room is not None:
+                    if bool(random.getrandbits(1)):
+                        self.rooms -= 1
+                        node.room = None
+                        return True
+
+            if self._prune(node.left, max_rooms):
+                self.left = None
+            if self._prune(node.right, max_rooms):
+                self.right = None
+
+        return False
 
     def debug_render(self, surface: pygame.Surface) -> None:
         if self.root is not None:

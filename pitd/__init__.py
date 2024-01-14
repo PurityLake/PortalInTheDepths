@@ -1,5 +1,7 @@
 from .scene import Scene
-from .scene.mapgen_scene import MapGenScene
+
+# from .scene.mapgen_scene import MapGenScene
+from .scene.bsp_scene import BSPScene
 import pygame
 from typing import Tuple
 
@@ -13,7 +15,7 @@ class PITD:
         self.size: Tuple[int, int] = size
         self._setup()
         self.dt: float = -1.0
-        self.scene: Scene = MapGenScene()
+        self.scene: Scene = BSPScene()
         self.clock: pygame.Clock = pygame.Clock()
         self.running: bool = True
 
