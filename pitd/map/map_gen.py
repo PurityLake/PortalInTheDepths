@@ -1,5 +1,5 @@
 from ..rand import Seed
-from .rect import Rect
+from ..math.rect import Rect
 
 from typing import List
 

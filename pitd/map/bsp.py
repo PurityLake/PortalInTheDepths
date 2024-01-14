@@ -1,5 +1,6 @@
 from ..rand import Seed
-from .rect import Rect
+from ..math.rect import Rect
+from ..math import math
 
 from dataclasses import dataclass
 import pygame
@@ -79,7 +80,7 @@ class BSP:
         horizontal = False
 
         if max_width >= self.min_node_size and max_height >= self.min_node_size:
-            horizontal = max_width > max_height
+            horizontal = bool(random.getrandbits(1))
         elif max_width >= self.min_node_size:
             horizontal = True
         elif max_height >= self.min_node_size:
@@ -122,8 +123,11 @@ class BSP:
         if node is not None:
             if node.left is None and node.right is None:
                 if node.width > self.min_width and node.height > self.min_height:
-                    width = random.randint(self.min_width, node.width)
-                    height = random.randint(self.min_height, node.height)
+                    width = random.randint(self.min_width, self.max_width)
+                    height = random.randint(self.min_height, self.max_width)
+                    width = math.clamp(width, self.min_width, self.max_width)
+                    height = math.clamp(
+                        height, self.min_height, self.max_height)
                     x = random.randint(0, abs(node.width - width))
                     y = random.randint(0, abs(node.height - height))
                     node.room = Rect(x, y, width, height)
