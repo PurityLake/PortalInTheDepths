@@ -1,7 +1,8 @@
-import math
-import os.path
 from . import Scene
 from ..fov import FOV
+
+import math
+import os.path
 from dataclasses import dataclass
 from enum import Enum, auto
 from typing import Any, List, Self, Tuple
@@ -10,9 +11,9 @@ import pygame
 
 class MapScene(Scene):
     def __init__(self, game_dir: str):
+        self.surfaceToDraw: pygame.Surface
         self.game_dir = game_dir
         self.font: pygame.Font = pygame.Font(size=20)
-        self.surfaceToDraw: pygame.Surface
         self.pos: Tuple[int, int] = (0, 0)
         self.the_map: Map = Map(self.game_dir, os.path.join("resources", "testmap.map"))
         self.player_pos: Tuple[int, int] = self.the_map.player_pos
@@ -56,6 +57,8 @@ class MapScene(Scene):
                             c,
                             True,
                             self._calc_color_from_distance(px, py, col.x, col.y),
+                            _calc_color_from_distance(px, py, col.x, col.y),
+                            _calc_color_from_distance(px, py, col.x, col.y),
                         )
                         self.surfaceToDraw.blit(surf, (col.x * 20, col.y * 20))
 

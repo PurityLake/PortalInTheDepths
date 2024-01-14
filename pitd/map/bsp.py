@@ -1,6 +1,7 @@
 from ..rand import Seed
-from dataclasses import dataclass
+from .rect import Rect
 
+from dataclasses import dataclass
 import pygame
 import random
 from typing import Self, Tuple
@@ -15,7 +16,7 @@ class Node:
     left: Self | None
     right: Self | None
     root: bool = False
-    room: pygame.Rect | None = None
+    room: Rect | None = None
     _debug_color: Tuple[int, int, int] | None = None
 
     def _get_debug_color(self) -> Tuple[int, int, int]:
@@ -120,7 +121,7 @@ class BSP:
                     height = random.randint(self.min_height, node.height)
                     x = random.randint(0, abs(node.width - width))
                     y = random.randint(0, abs(node.height - height))
-                    node.room = pygame.Rect(x, y, width, height)
+                    node.room = Rect(x, y, width, height)
                     self.rooms += 1
             else:
                 self._generate_rooms(node.left)
@@ -183,10 +184,11 @@ class BSP:
                     (
                         x + node.room.x,
                         y + node.room.y,
-                        node.room.width,
-                        node.room.height,
+                        node.room.w,
+                        node.room.h,
                     ),
                 )
 
             self._debug_render(surface, node.left, node.right, x, y)
+            self._debug_render(surface, node.right, node.left, x, y)
             self._debug_render(surface, node.right, node.left, x, y)
